@@ -1,13 +1,11 @@
-from sklearn.pipeline import Pipeline
-from utils.logger import logger
-import pandas as pd
 import itertools
+
+import pandas as pd
+
+from sklearn.model_selection import train_test_split
 
 
 def transform_data(data_frame: pd.DataFrame) -> pd.DataFrame:
-    # prepare feature vectores
-    # sample the data
-
     gestures_df = data_frame
     # Add feature vector size
     gestures_df["feature_vector_size"] = gestures_df.X.apply(lambda x: len(x))
@@ -18,23 +16,25 @@ def transform_data(data_frame: pd.DataFrame) -> pd.DataFrame:
     # zip x y z data points and flatten the list
     # TODO: sample the data into a fixed feature vector size
     gestures_df["features"] = gestures_df.apply(lambda row: list(itertools.chain(*zip(row.X, row.Y, row.Z))), axis=1)
-
-
-    # gestures_df_train_test
-
-    print(gestures_df.shape)
-    print(gestures_df.head())
-    print(gestures_df.features)
-
+    gestures_df = pd.concat(
+        [gestures_df["gesture_id"].reset_index(drop=True), pd.DataFrame(gestures_df.features.tolist())], axis=1,
+        ignore_index=True)
+    gestures_df.rename(columns={0: "gesture_id"}, inplace=True)
+    # Filling missing values
+    gestures_df.fillna(0, inplace=True)
     return gestures_df
 
 
 def train_test_data(data_frame: pd.DataFrame):
-    pass
+    gestures_X = data_frame.drop(["gesture_id"], axis=1)
+    gestures_y = data_frame[["gesture_id"]]
+    X_train, X_test, y_train, y_test = train_test_split(gestures_X, gestures_y, test_size=0.3, random_state=7)
+    return X_train, X_test, y_train, y_test
 
 
 if __name__ == '__main__':
     data_path = "/home/j3/Desktop/gesture-recognition/data/clean/gestures_clean.pkl"
     df = pd.read_pickle(data_path)
-
-    transform_data(df)
+    df_ready = transform_data(df)
+    print(df_ready.shape)
+    print(df_ready.head())
