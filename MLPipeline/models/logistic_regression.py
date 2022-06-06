@@ -36,6 +36,6 @@ class MultinomialLogisticRegression:
             error_w, error_b = MultinomialLogisticRegression.gradient_descent(x, y_encoded, predictions)
 
             # Update model params
-            self.weights += learning_rate * error_w
-            self.bias += learning_rate * error_b
+            self.weights -= learning_rate * error_w
+            self.bias -= learning_rate * error_b
             # learning_rate *= 0.95
