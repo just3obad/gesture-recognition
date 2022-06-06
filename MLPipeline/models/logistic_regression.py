@@ -1,11 +1,13 @@
-import numpy as np
 import copy
-from tqdm import tqdm
+
+import numpy as np
 import pandas as pd
-from MLPipeline.transformation import transform_data, train_test_data
 from sklearn.datasets import make_classification
-from sklearn.preprocessing import OneHotEncoder
 from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import OneHotEncoder
+from tqdm import tqdm
+
+from MLPipeline.transformation import transform_data, train_test_data
 
 
 def gradient_descent(x, y_true, y_pred):
@@ -66,9 +68,9 @@ if __name__ == '__main__':
                                random_state=1)
 
     model = MultinomialLogisticRegression()
-    # model.fit(X, y.reshape(-1, 1), iterations=200)
-    model.fit(X_train, y_train, iterations=100)
+    model.fit(X, y.reshape(-1, 1), iterations=200)
+    # model.fit(X_train, y_train, iterations=100)
 
-    # accuracy = model.predict_score(X, y)
-    accuracy = model.predict_score(X_train, y_train)
+    accuracy = model.predict_score(X, y)
+    # accuracy = model.predict_score(X_train, y_train)
     print(accuracy * 100)
