@@ -9,7 +9,7 @@ class MultinomialLogisticRegression:
     def gradient_descent(x, y_true, y_pred):
         difference = y_pred - y_true
         gradient_b = np.mean(difference, axis=0)
-        gradients_w = np.matmul(x.transpose(), difference)
+        gradients_w = np.mean(np.matmul(x.transpose(), difference))
         return gradients_w, gradient_b
 
     def predict_prob(self, x):
