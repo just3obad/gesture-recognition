@@ -7,8 +7,6 @@ from sklearn.datasets import make_classification
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.metrics import accuracy_score
 
-from scipy.special import softmax
-
 
 def gradient_descent(x, y_true, y_pred):
     difference = y_pred - y_true
@@ -17,10 +15,15 @@ def gradient_descent(x, y_true, y_pred):
     return gradients_w
 
 
+def softmax(x):
+    e = np.exp(x - np.max(x))
+    return e / np.array([np.sum(e, axis=1)]).T
+
+
 class MultinomialLogisticRegression:
 
     def predict_prob(self, x):
-        return softmax(np.dot(x, self.weights), axis=1)
+        return softmax(np.dot(x, self.weights))
 
     def predict(self, x):
         return np.argmax(self.predict_prob(x), axis=1)
@@ -59,13 +62,13 @@ if __name__ == '__main__':
     # print(model.score)
     # # print(model.score())
 
-    # X, y = make_classification(n_samples=1000, n_features=10, n_informative=5, n_redundant=5, n_classes=8,
-    #                            random_state=1)
+    X, y = make_classification(n_samples=1000, n_features=10, n_informative=5, n_redundant=5, n_classes=8,
+                               random_state=1)
 
     model = MultinomialLogisticRegression()
     # model.fit(X, y.reshape(-1, 1), iterations=200)
     model.fit(X_train, y_train, iterations=100)
 
     # accuracy = model.predict_score(X, y)
-    accuracy = model.predict_score(X_test, y_test)
+    accuracy = model.predict_score(X_train, y_train)
     print(accuracy * 100)
