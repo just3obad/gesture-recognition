@@ -17,19 +17,25 @@ def gradient_descent(x, y_true, y_pred):
     return gradients_w
 
 
-def negative_log_likelihood(x, w, y):
-    # sigmoid_activation = sigmoid(numpy.dot(self.x, self.W) + self.b)
-    sigmoid_activation = softmax(np.dot(x, w))
+# def negative_log_likelihood(x, w, y):
+#     # sigmoid_activation = sigmoid(numpy.dot(self.x, self.W) + self.b)
+#     sigmoid_activation = softmax(np.dot(x, w))
+#
+#     cross_entropy = - np.mean(np.sum(y * np.log(sigmoid_activation) + (1 - y) * np.log(1 - sigmoid_activation),
+#                                      axis=1))
+#
+#     return cross_entropy
 
-    cross_entropy = - np.mean(np.sum(y * np.log(sigmoid_activation) + (1 - y) * np.log(1 - sigmoid_activation),
-                                     axis=1))
 
-    return cross_entropy
-
+# def softmax_1d(x):
+#     return np.exp(x) / np.sum(np.exp(x))
 
 def softmax(x):
-    e = np.exp(x - np.max(x))
-    return e / np.array([np.sum(e, axis=1)]).T
+    # result = []
+    # for row in x:
+    #     result.append(softmax_1d(row))
+    # return np.array(result)
+    return np.exp(x) / np.sum(np.exp(x), axis=1, keepdims=True)
 
 
 class MultinomialLogisticRegression:
@@ -45,7 +51,7 @@ class MultinomialLogisticRegression:
         predictions = self.predict(xb)
         return accuracy_score(y, predictions)
 
-    def fit(self, x, y, iterations=200, learning_rate=0.01):
+    def fit(self, x, y, iterations=200, learning_rate=0.001):
         x = copy.deepcopy(x)  # shape = (samples, features)
         y = copy.deepcopy(y)
         bias = np.ones((x.shape[0], 1))
@@ -65,27 +71,26 @@ class MultinomialLogisticRegression:
             self.weights -= learning_rate * error_w
             # print(negative_log_likelihood(xb, self.weights, y_encoded))
 
-# if __name__ == '__main__':
-#     data_path = "/home/j3/Desktop/gesture-recognition/data/clean/gestures.pkl"
-#     df = pd.read_pickle(data_path)
-#     df_ready = transform_data(df)
-#     X_train, X_test, y_train, y_test = train_test_data(df_ready)
-#     # model = LogisticRegression()
-#     # model.fit(X_train, y_train, iterations=100)
-#     # print(model.score)
-#     # # print(model.score())
-#
-#     y_train = np.array(y_train["gesture_id"].astype(int)).reshape(-1, 1)
-#     y_test = y_test["gesture_id"].astype(int)
-#
-#     X, y = make_classification(n_samples=1000, n_features=10, n_informative=5, n_redundant=5, n_classes=8,
-#                                random_state=1)
-#
-#     model = MultinomialLogisticRegression()
-#     # model.fit(X, y.reshape(-1, 1), iterations=200)
-#     model.fit(X_train, y_train, iterations=100)
-#
-#     # accuracy = model.predict_score(X, y)
-#
-#     accuracy = model.predict_score(X_train, y_train)
-#     print(accuracy * 100)
+
+if __name__ == '__main__':
+    data_path = "/home/j3/Desktop/gesture-recognition/data/clean/gestures.pkl"
+    df = pd.read_pickle(data_path)
+    df_ready = transform_data(df)
+    X_train, X_test, y_train, y_test = train_test_data(df_ready)
+    # model = LogisticRegression()
+    # model.fit(X_train, y_train, iterations=100)
+    # print(model.score)
+    # # print(model.score())
+
+    y_train = np.array(y_train["gesture_id"].astype(int)).reshape(-1, 1)
+    y_test = y_test["gesture_id"].astype(int)
+
+    X, y = make_classification(n_samples=10, n_features=10, n_informative=5, n_redundant=5, n_classes=8,
+                               random_state=1)
+    #
+    model = MultinomialLogisticRegression()
+    # model.fit(X, y.reshape(-1, 1), iterations=200)
+    model.fit(X_train, y_train, iterations=200)
+    # accuracy = model.predict_score(X, y)
+    accuracy = model.predict_score(X_train, y_train)
+    print(accuracy * 100)
