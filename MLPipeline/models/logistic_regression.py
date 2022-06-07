@@ -65,7 +65,6 @@ class MultinomialLogisticRegression:
             self.weights -= learning_rate * error_w
             # print(negative_log_likelihood(xb, self.weights, y_encoded))
 
-
 # if __name__ == '__main__':
 #     data_path = "/home/j3/Desktop/gesture-recognition/data/clean/gestures.pkl"
 #     df = pd.read_pickle(data_path)
