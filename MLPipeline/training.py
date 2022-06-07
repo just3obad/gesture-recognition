@@ -1,6 +1,7 @@
 import os
 
 import joblib
+import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
@@ -38,6 +39,8 @@ def train_random_forrest(X_train, X_test, y_train, y_test):
 
 def train_custom_logistic_regression(X_train, X_test, y_train, y_test):
     model = MultinomialLogisticRegression()
+    y_train = np.array(y_train["gesture_id"].astype(int)).reshape(-1, 1)
+    y_test = y_test["gesture_id"].astype(int)
     model.fit(X_train, y_train)
     logger.info(f"Accuracy%: {model.predict_score(X_test, y_test) * 100}")
     joblib.dump(model, os.path.join(model_registry, "custom_logistic_regression_model.pkl"))
