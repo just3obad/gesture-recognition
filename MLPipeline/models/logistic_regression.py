@@ -2,8 +2,6 @@ import copy
 
 import numpy as np
 import pandas as pd
-from sklearn.datasets import make_classification
-from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import OneHotEncoder
 from tqdm import tqdm
 
@@ -17,28 +15,18 @@ def gradient_descent(x, y_true, y_pred):
     return gradients_w
 
 
-# def negative_log_likelihood(x, w, y):
-#     # sigmoid_activation = sigmoid(numpy.dot(self.x, self.W) + self.b)
-#     sigmoid_activation = softmax(np.dot(x, w))
-#
-#     cross_entropy = - np.mean(np.sum(y * np.log(sigmoid_activation) + (1 - y) * np.log(1 - sigmoid_activation),
-#                                      axis=1))
-#
-#     return cross_entropy
-
-
-# def softmax_1d(x):
-#     return np.exp(x) / np.sum(np.exp(x))
-
 def softmax(x):
-    # result = []
-    # for row in x:
-    #     result.append(softmax_1d(row))
-    # return np.array(result)
     return np.exp(x) / np.sum(np.exp(x), axis=1, keepdims=True)
 
 
 class MultinomialLogisticRegression:
+
+    @staticmethod
+    def loss(X, Y, W):
+        Z = X @ W
+        N = X.shape[0]
+        loss = 1 / N * (-1 * np.trace(X @ W @ Y.T) + np.sum(np.log(np.sum(np.exp(Z), axis=1))))
+        return loss
 
     def predict_prob(self, x):
         return softmax(np.dot(x, self.weights))
@@ -48,10 +36,19 @@ class MultinomialLogisticRegression:
 
     def predict_score(self, x, y):
         xb = np.hstack((x, np.ones((x.shape[0], 1))))  # shape = (num_samples, features+1(bias))
-        predictions = self.predict(xb)
-        return accuracy_score(y, predictions)
+        predictions = self.predict_prob(xb)
 
-    def fit(self, x, y, iterations=200, learning_rate=0.001):
+        encoder = OneHotEncoder(sparse=False)
+        y_encoded = encoder.fit_transform(y)
+
+        score = 0
+        for i, j in zip(predictions, y_encoded):
+            if np.argmax(i) == np.argmax(j):
+                score += 1
+
+        return score / xb.shape[0]
+
+    def fit(self, x, y, iterations=1000, learning_rate=0.1, save_loss=False):
         x = copy.deepcopy(x)  # shape = (samples, features)
         y = copy.deepcopy(y)
         bias = np.ones((x.shape[0], 1))
@@ -64,12 +61,20 @@ class MultinomialLogisticRegression:
 
         # Init default params
         self.weights = np.zeros((n_features, n_classes))  # shape = (num_samples, features+1(bias))
+        self.loss = []
 
         for _ in tqdm(range(iterations)):
             predictions = self.predict_prob(xb)
             error_w = gradient_descent(xb, y_encoded, predictions)
             self.weights -= learning_rate * error_w
-            # print(negative_log_likelihood(xb, self.weights, y_encoded))
+
+            # Loss
+            loss = MultinomialLogisticRegression.loss(xb, y_encoded, self.weights)
+            self.loss.append(loss)
+
+        if save_loss:
+            loss_df = pd.DataFrame(self.loss, columns=["loss"])
+            loss_df.to_csv("loss.csv", index=False)
 
 
 if __name__ == '__main__':
@@ -77,20 +82,17 @@ if __name__ == '__main__':
     df = pd.read_pickle(data_path)
     df_ready = transform_data(df)
     X_train, X_test, y_train, y_test = train_test_data(df_ready)
+
     # model = LogisticRegression()
     # model.fit(X_train, y_train, iterations=100)
     # print(model.score)
     # # print(model.score())
 
-    y_train = np.array(y_train["gesture_id"].astype(int)).reshape(-1, 1)
-    y_test = y_test["gesture_id"].astype(int)
+    y_train = y_train["gesture_id"].values.reshape(-1, 1)
+    y_test = y_test["gesture_id"].values.reshape(-1, 1)
 
-    X, y = make_classification(n_samples=10, n_features=10, n_informative=5, n_redundant=5, n_classes=8,
-                               random_state=1)
-    #
     model = MultinomialLogisticRegression()
-    # model.fit(X, y.reshape(-1, 1), iterations=200)
-    model.fit(X_train, y_train, iterations=200)
-    # accuracy = model.predict_score(X, y)
-    accuracy = model.predict_score(X_train, y_train)
+
+    model.fit(X_train, y_train, iterations=1000, save_loss=True)
+    accuracy = model.predict_score(X_test, y_test)
     print(accuracy * 100)
