@@ -9,7 +9,7 @@ def plot_loss(loss_csv, save_fig=False):
     plt.plot(loss_df["loss"], label="loss")
     plt.show()
     if save_fig:
-        fig.savefig("loss.png")
+        fig.savefig("loss.jpg")
 
 
 if __name__ == '__main__':
